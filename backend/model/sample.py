@@ -15,7 +15,7 @@ print(f"🎸 Initializing Jazz Generator on {config.DEVICE}...")
 
 gen_j = Generator().to(config.DEVICE)
 # Updated path to look inside the weights folder
-checkpoint = torch.load("ai_module/weights/gen_j.pth.tar", map_location=config.DEVICE, weights_only=False)
+checkpoint = torch.load("model/gen_j.pth.tar", map_location=config.DEVICE, weights_only=False)
 gen_j.load_state_dict(checkpoint["state_dict"])
 gen_j.eval() 
 
@@ -100,10 +100,4 @@ def process_pop_to_jazz(audio_bytes):
     print("🔊 Synthesizing audio from spectrogram...")
     audio_array = spec_to_sound(final_spec, sr=22050)
     
-    # Write the final audio to a memory buffer instead of the disk
-    output_buffer = io.BytesIO()
-    sf.write(output_buffer, audio_array, 22050, format='WAV')
-    output_buffer.seek(0) # Rewind the buffer so FastAPI reads it from the beginning
-    
-    print("✅ Conversion complete!")
-    return output_buffer
+    return audio_array
