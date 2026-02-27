@@ -3,9 +3,17 @@ import torch
 import soundfile as sf
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import Response
-
+from fastapi.middleware.cors import CORSMiddleware
 from model.sample import process_pop_to_jazz
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, you change this to your actual React website URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get('/')
 def index():

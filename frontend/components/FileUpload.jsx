@@ -18,7 +18,7 @@ function FileUploader(){
         const formData = new FormData();
         formData.append('file', file);
         try {
-            await axios.post('', formData, {
+            await axios.post(`${import.meta.env.VITE_API_URL}/jazz`, formData, {
                 headers: {
                     'Content-Type' : 'multipart/form-data',
                 }
@@ -39,7 +39,7 @@ function FileUploader(){
                     <p>File Type: {file.type}</p>
                 </div>
             )}
-            {file && status !== 'uploading' && <button onclick = {handleFileUpload}>Upload</button>}
+            {file && status !== 'uploading' && <button onClick = {handleFileUpload}>Upload</button>}
             {status === 'success' && <p>Audio uploaded successfully!</p>}
             {status === 'error' && <p>Upload failed. Please try again.</p>}
         </div>
