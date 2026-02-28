@@ -5,10 +5,13 @@ import axios from 'axios';
 function FileUploader(){
     const [file,setFile] = useState(null);
     const [status,setStatus] = useState('idle');
+    const [audioUrl, setAudioUrl] = useState(null);
 
     function handleFileChange(e) {
         if (e.target.files) {
             setFile(e.target.files[0]);
+            setAudioUrl(null);
+            setStatus('idle');
         }
     }
 
@@ -18,19 +21,24 @@ function FileUploader(){
         const formData = new FormData();
         formData.append('file', file);
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL}/jazz`, formData, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/jazz`, formData, {
                 headers: {
                     'Content-Type' : 'multipart/form-data',
-                }
+                },
+                responseType: 'blob',
             });
+            const newAudioUrl = URL.createObjectURL(response.data);
+            setAudioUrl(newAudioUrl);
             setStatus('success');
-        } catch{
+        } catch(error){
+            console.log(error);
             setStatus('error');
         };
 
     }
     return (
         <div>
+            <h2>Pop to Jazz Converter</h2>
             <input type = "file" accept="audio/wav" onChange={handleFileChange}></input>
             {file && (
                 <div>
@@ -40,8 +48,15 @@ function FileUploader(){
                 </div>
             )}
             {file && status !== 'uploading' && <button onClick = {handleFileUpload}>Upload</button>}
+            {status === 'uploading' && <p>Processing through AI model... Please wait.</p>}
             {status === 'success' && <p>Audio uploaded successfully!</p>}
             {status === 'error' && <p>Upload failed. Please try again.</p>}
+            {audioUrl && (
+                <div style={{ marginTop: '20px' }}>
+                    <h3>Your Generated Track:</h3>
+                    <audio src={audioUrl} controls></audio>
+                </div>
+            )}
         </div>
     )
 }

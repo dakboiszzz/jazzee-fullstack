@@ -4,6 +4,7 @@ import soundfile as sf
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
+
 from model.sample import process_pop_to_jazz
 app = FastAPI()
 
