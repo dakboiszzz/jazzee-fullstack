@@ -5,6 +5,13 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 
+import os
+import yt_dlp
+from pydantic import BaseModel
+
+class YouTubeRequest(BaseModel):
+    url: str
+
 from model.sample import process_pop_to_jazz
 app = FastAPI()
 
@@ -16,13 +23,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def download_youtube_audio(url: str) -> bytes:
+    # 1. Configure yt-dlp to download only audio and convert to WAV
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'wav',
+            'preferredquality': '192',
+        }],
+        'outtmpl': 'temp_youtube_audio.%(ext)s', # Save to this temporary filename
+        'quiet': True 
+    }
+    
+    # 2. Execute the download
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+        
+    # 3. Read the downloaded file into bytes (this perfectly mimics your old 'await file.read()')
+    with open('temp_youtube_audio.wav', 'rb') as f:
+        audio_bytes = f.read()
+        
+    # 4. Clean up your hard drive by deleting the temp file
+    if os.path.exists('temp_youtube_audio.wav'):
+        os.remove('temp_youtube_audio.wav')
+        
+    return audio_bytes
+
 @app.get('/')
 def index():
     return {"message" : "Hello World!"}
 
 @app.post('/jazz')
-async def convert_pop_to_jazz(file: UploadFile = File(...)):
-    song = await file.read()
+def convert_pop_to_jazz(request: YouTubeRequest):
+    song = download_youtube_audio(request.url)
+    
     output = process_pop_to_jazz(song)
     audio_numpy = output.squeeze()
     # DEBUG: This will print in your terminal so we know the model actually made sound!

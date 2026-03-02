@@ -3,28 +3,25 @@ import { useState } from "react";
 import axios from 'axios';
 
 function FileUploader(){
-    const [file,setFile] = useState(null);
+    const [ytbUrl, setYtbUrl] = useState('');
     const [status,setStatus] = useState('idle');
     const [audioUrl, setAudioUrl] = useState(null);
 
-    function handleFileChange(e) {
-        if (e.target.files) {
-            setFile(e.target.files[0]);
+    function handleInputChange(e) {
+        if (e.target.value) {
+            setYtbUrl(e.target.value);
             setAudioUrl(null);
             setStatus('idle');
         }
     }
 
-    async function handleFileUpload() {
-        if (!file) return;
-        setStatus('uploading');
-        const formData = new FormData();
-        formData.append('file', file);
+    async function handleConvert() {
+        if (!ytbUrl) return;
+        setStatus('processing');
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/jazz`, formData, {
-                headers: {
-                    'Content-Type' : 'multipart/form-data',
-                },
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/jazz`,{
+                url : ytbUrl
+            }, {
                 responseType: 'blob',
             });
             const newAudioUrl = URL.createObjectURL(response.data);
@@ -39,16 +36,9 @@ function FileUploader(){
     return (
         <div>
             <h2>Pop to Jazz Converter</h2>
-            <input type = "file" accept="audio/wav" onChange={handleFileChange}></input>
-            {file && (
-                <div>
-                    <p>File Name : {file.name}</p>
-                    <p>Size: {(file.size / 1024).toFixed(2)} KB</p>
-                    <p>File Type: {file.type}</p>
-                </div>
-            )}
-            {file && status !== 'uploading' && <button onClick = {handleFileUpload}>Upload</button>}
-            {status === 'uploading' && <p>Processing through AI model... Please wait.</p>}
+            <input type = "text" onChange={handleInputChange} placeholder="Enter a Youtube Url"></input>
+            {ytbUrl && status !== 'processing' && <button onClick = {handleConvert}>Upload</button>}
+            {status === 'processing' && <p>Processing through AI model... Please wait.</p>}
             {status === 'success' && <p>Audio uploaded successfully!</p>}
             {status === 'error' && <p>Upload failed. Please try again.</p>}
             {audioUrl && (
