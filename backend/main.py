@@ -17,7 +17,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, you change this to your actual React website URL
+    allow_origins=["https://jazzee-fullstack.vercel.app"], # In production, you change this to your actual React website URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
